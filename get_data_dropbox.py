@@ -3,17 +3,15 @@ from dotenv import load_dotenv
 import os
 from config.read_config import config_json
 import pandas as pd
-from io import BytesIO
+import tempfile
 
 config = config_json()
-#Variavéis de configurações
 pasta_dropbox = config["dropbox_folder"]
 candidatos = config["arquivos"]["candidatos"]
 bens = config["arquivos"]["bens"]
 despesas = config["arquivos"]["despesas"]
 votos = config["arquivos"]["votos"]
 receitas = config["arquivos"]["receitas"]
-
 
 load_dotenv()
 APP_KEY = os.getenv("APP_KEY")
@@ -26,47 +24,43 @@ dbx = dropbox.Dropbox(
     oauth2_refresh_token=REFRESH_TOKEN
 )
 
-def dataframe_candidados():
-    # Ler o arquivo específico
-    caminho_dropbox = f"{pasta_dropbox}/{candidatos}"
-    metadata, res = dbx.files_download(caminho_dropbox)  # baixa o arquivo em memória
-    df = pd.read_csv(BytesIO(res.content))  # cria DataFrame
+chunksize = 1000
 
-    print(f"\n📄 Carregando arquivo: {candidatos}")
+def read_dropbox_file(file_name):
+    caminho_dropbox = f"{pasta_dropbox}/{file_name}"
+    metadata, res = dbx.files_download(caminho_dropbox)
+
+    print(f"\n📄 Carregando arquivo: {file_name}")
+
+    # Cria um arquivo temporário no Windows
+    tmp_path = os.path.join(tempfile.gettempdir(), f"{file_name}")
+
+    # Escreve em chunks para evitar MemoryError
+    with open(tmp_path, "wb") as f:
+        for chunk in res.iter_content(chunk_size=8 * 1024):  # 8 KB
+            if chunk:
+                f.write(chunk)
+
+    # Processa CSV em chunks do Pandas
+    chunks = pd.read_csv(tmp_path, chunksize=chunksize)
+    df = pd.concat(chunks, ignore_index=True)  # você ainda pode concatenar se couber na memória
+
+    # Remove arquivo temporário
+    os.remove(tmp_path)
+
     return df
+
+def dataframe_candidados():
+    return read_dropbox_file(candidatos)
 
 def dataframe_bens():
-    # Ler o arquivo específico
-    caminho_dropbox = f"{pasta_dropbox}/{bens}"
-    metadata, res = dbx.files_download(caminho_dropbox)  # baixa o arquivo em memória
-    df = pd.read_csv(BytesIO(res.content))  # cria DataFrame
-
-    print(f"\n📄 Carregando arquivo: {bens}")
-    return df
+    return read_dropbox_file(bens)
 
 def dataframe_despesas():
-    # Ler o arquivo específico
-    caminho_dropbox = f"{pasta_dropbox}/{despesas}"
-    metadata, res = dbx.files_download(caminho_dropbox)  # baixa o arquivo em memória
-    df = pd.read_csv(BytesIO(res.content))  # cria DataFrame
-
-    print(f"\n📄 Carregando arquivo: {despesas}")
-    return df
+    return read_dropbox_file(despesas)
 
 def dataframe_votos():
-    # Ler o arquivo específico
-    caminho_dropbox = f"{pasta_dropbox}/{votos}"
-    metadata, res = dbx.files_download(caminho_dropbox)  # baixa o arquivo em memória
-    df = pd.read_csv(BytesIO(res.content))  # cria DataFrame
-
-    print(f"\n📄 Carregando arquivo: {votos}")
-    return df
+    return read_dropbox_file(votos)
 
 def dataframe_receitas():
-    # Ler o arquivo específico
-    caminho_dropbox = f"{pasta_dropbox}/{receitas}"
-    metadata, res = dbx.files_download(caminho_dropbox)  # baixa o arquivo em memória
-    df = pd.read_csv(BytesIO(res.content))  # cria DataFrame
-
-    print(f"\n📄 Carregando arquivo: {receitas}")
-    return df
+    return read_dropbox_file(receitas)
