@@ -1,7 +1,6 @@
 import dropbox
 from dotenv import load_dotenv
 import os
-from pathlib import Path
 from config.read_config import config_json
 import pandas as pd
 from io import BytesIO

@@ -6,5 +6,32 @@
     "despesas": "eleicoes_despesas_2022-2024.csv",
     "votos": "eleicao_votos_candidatos_2022-2024.csv",
     "receitas": "eleicao_receita_candidato_2022-2024.csv"
-  }
+  },
+  "database": [
+    {
+      "arquivo": "candidatos",
+      "schema": "stage",
+      "table": "stg_cotacoes_candidatos"
+    },
+    {
+      "arquivo": "bens",
+      "schema": "stage",
+      "table": "stg_cotacoes_bens"
+    },
+    {
+      "arquivo": "despesas",
+      "schema": "stage",
+      "table": "stg_cotacoes_despesas"
+    },
+    {
+      "arquivo": "votos",
+      "schema": "stage",
+      "table": "stg_cotacoes_votos"
+    },
+    {
+      "arquivo": "receitas",
+      "schema": "stage",
+      "table": "stg_cotacoes_receitas"
+    }
+  ]
 }

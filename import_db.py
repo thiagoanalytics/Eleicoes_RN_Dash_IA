@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 import pandas as pd
 import os
 
-def insert_data_to_db(df):
+
+def insert_data_to_db(df,table_name,schema_name):
     # Carregar variáveis de ambiente do arquivo .env
     load_dotenv()
 
@@ -18,13 +19,9 @@ def insert_data_to_db(df):
     database_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     engine = create_engine(database_url)
 
-    # Renomear para o nome correto no banco
-    df_envio = df.rename(columns={
-        "horario_de_coleta": "horario_coleta"
-    })[["ativo", "preco", "moeda", "horario_coleta"]]
-
     try:
-        df_envio.to_sql("stg_cotacoes", engine, schema="stage", if_exists="append", index=False)
-        print("Dados inseridos com sucesso!")
+        # Inserir os dados no banco usando os nomes das colunas do DataFrame
+        df.to_sql(table_name, engine, schema=schema_name, if_exists="append", index=False)
+        print(f"✅ Dados inseridos com sucesso na tabela {schema_name}.{table_name}!")
     except Exception as e:
-        print(f"Erro ao inserir dados: {e}")
+        print(f"❌ Erro ao inserir dados: {e}")
