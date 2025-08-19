@@ -1,0 +1,10 @@
+{
+  "dropbox_folder": "/eleicoes_bases",
+  "arquivos": {
+    "candidatos": "eleicoes_candidatos_2022-2024.csv",
+    "bens": "eleicoes_bens_candidatos_2022-2024.csv",
+    "despesas": "eleicoes_despesas_2022-2024.csv",
+    "votos": "eleicao_votos_candidatos_2022-2024.csv",
+    "receitas": "eleicao_receita_candidato_2022-2024.csv"
+  }
+}
