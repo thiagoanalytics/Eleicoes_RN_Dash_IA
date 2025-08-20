@@ -14,6 +14,7 @@ ano INT NOT NULL
 ,tipo_item TEXT
 ,descricao_item TEXT
 ,valor_item NUMERIC(14,2)
+,insert_date TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
 
 )
 
