@@ -4,22 +4,23 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.read_config import config_json
-from get_data_dropbox import (
-    dataframe_bens,
-    dataframe_candidados,
-    dataframe_despesas,
-    dataframe_receitas,
-    dataframe_votos
-)
+from get_data_dropbox import read_dropbox_file
 from import_db import insert_data_to_db
 from exec_procedure import exec_procedure
 
 load_dotenv()  # carrega variáveis do .env
-
+config = config_json()
 print(os.environ.get("PREFECT_API_URL"))  # teste
 
-# ===== Carregar configurações =====
-config = config_json()
+# ===== Carregar nome dos arquivos a serem extraídos ======
+pasta_dropbox = config["dropbox_folder"]
+arquivo_candidatos = config["arquivos"]["candidatos"]
+arquivo_bens = config["arquivos"]["bens"]
+arquivo_despesas = config["arquivos"]["despesas"]
+arquivo_votos = config["arquivos"]["votos"]
+arquivo_receitas = config["arquivos"]["receitas"]
+
+# ===== Carregar configurações do banco de dados =====
 database_list = []
 for db_config in config["database"]:
     arquivo_key = db_config["arquivo"]   # chave do arquivo no JSON "arquivos"
@@ -39,29 +40,30 @@ despesas_list = database_list[2]
 votos_list = database_list[3]
 receitas_list = database_list[4]
 
+# ===== Carregar configurações das procedures =====
 proc_historico_bens_candidatos = "historico.atualiza_bens_candidatos"
 
 
 # ===== Tarefas =====
 @task
 def extrair_bens():
-    return dataframe_bens()
+    return read_dropbox_file(pasta_dropbox,arquivo_bens)
 
 @task
 def extrair_candidatos():
-    return dataframe_candidados()
+    return read_dropbox_file(pasta_dropbox,arquivo_candidatos)
 
 @task
 def extrair_despesas():
-    return dataframe_despesas()
+    return read_dropbox_file(pasta_dropbox,arquivo_despesas)
 
 @task
 def extrair_receitas():
-    return dataframe_receitas()
+    return read_dropbox_file(pasta_dropbox,arquivo_receitas)
 
 @task
 def extrair_votos():
-    return dataframe_votos()
+    return read_dropbox_file(pasta_dropbox,arquivo_votos)
 
 
 @task
