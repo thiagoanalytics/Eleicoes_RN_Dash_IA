@@ -12,6 +12,7 @@ from get_data_dropbox import (
     dataframe_votos
 )
 from import_db import insert_data_to_db
+from exec_procedure import exec_procedure
 
 load_dotenv()  # carrega variáveis do .env
 
@@ -37,6 +38,8 @@ bens_list = database_list[1]
 despesas_list = database_list[2]
 votos_list = database_list[3]
 receitas_list = database_list[4]
+
+proc_historico_bens_candidatos = "historico.atualiza_bens_candidatos"
 
 
 # ===== Tarefas =====
@@ -66,6 +69,10 @@ def carregar(df, schema, table):
     insert_data_to_db(df, table, schema)
     print(f"📤 Dados carregados em {schema}.{table}")
 
+@task
+def exec_SP(procedure):
+    exec_procedure(procedure)
+    
 
 # ===== Flow principal =====
 @flow
@@ -77,13 +84,15 @@ def pipeline_eleicoes():
     receitas = extrair_receitas()
     votos = extrair_votos()
 
-    # Carga
+    # Carga no banco
     carregar(bens, bens_list["schema"], bens_list["table"])
     carregar(candidatos, candidatos_list["schema"], candidatos_list["table"])
     carregar(despesas, despesas_list["schema"], despesas_list["table"])
     carregar(receitas, receitas_list["schema"], receitas_list["table"])
     carregar(votos, votos_list["schema"], votos_list["table"])
 
+    # Executar Procedures
+    exec_SP(proc_historico_bens_candidatos)
 
 if __name__ == "__main__":
     pipeline_eleicoes()
